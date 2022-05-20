@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union, Any
+from typing import Union, Any, Sequence
+from functools import partial
 
 import numpy as np
 
@@ -25,6 +26,7 @@ from netket.utils import deprecate_dtype
 from netket.utils.types import NNInitFunc
 from netket import jax as nkjax
 from netket import nn as nknn
+from netket.utils import HashableArray
 
 default_kernel_init = normal(stddev=0.001)
 
@@ -228,3 +230,90 @@ class NDM(nn.Module):
         return (
             ψ_S(σr, σc, symmetric=True) + 1j * ψ_A(σr, σc, symmetric=False) + Π(σr, σc)
         )
+
+
+@partial(jax.jit, static_argnums=[1, 2])
+def binarise1(states, bits_per_local_occupation, total_bits):
+    binarised_states = jnp.empty(states.shape[:-1] + (total_bits,))
+
+    ib = 0
+    # TODO: write for loop in jax, otherwise this will be slow
+    for i in range(states.shape[-1]):
+        substates = states[..., i : i + 1].astype(int)
+        binarised_states = (
+            binarised_states.at[..., ib : ib + bits_per_local_occupation[i]]
+            .set(
+                substates & 2 ** jnp.arange(bits_per_local_occupation[i], dtype=int)
+                != 0
+            )
+            .astype(int)
+        )
+        ib += bits_per_local_occupation[i]
+    return binarised_states
+
+
+class NDMMultiVal(nn.Module):
+    """
+    Generalises the Positive-Definite Neural Density Matrix using the ansatz from Torlai and
+    Melko, PRL 120, 240503 (2018) to arbitrary local sizes.
+
+    Assumes real dtype. #TODO why? Is it because complex numbers are already described by the phase part of the ansatz?
+    """
+
+    local_sizes: Sequence[int]
+    """Local sizes of the discrete Hilbert space"""
+    dtype: Any = np.float64
+    """The dtype of the weights."""
+    activation: Any = nknn.log_cosh
+    """The nonlinear activation function."""
+    alpha: Union[float, int] = 1
+    """The feature density for the pure-part of the ansatz.
+    Number of features equal to alpha * input.shape[-1]
+    """
+    beta: Union[float, int] = 1
+    """The feature density for the mixed-part of the ansatz.
+    Number of features equal to beta * input.shape[-1]
+    """
+    use_hidden_bias: bool = True
+    """if True uses a bias in the dense layer (hidden layer bias)."""
+    use_ancilla_bias: bool = True
+    """if True uses a bias in the dense layer (hidden layer bias)."""
+    use_visible_bias: bool = True
+    """if True adds a bias to the input not passed through the nonlinear layer."""
+    precision: Any = None
+    """numerical precision of the computation see `jax.lax.Precision`for details."""
+
+    kernel_init: NNInitFunc = default_kernel_init
+    """Initializer for the Dense layer matrix."""
+    bias_init: NNInitFunc = default_kernel_init
+    """Initializer for the hidden bias."""
+    visible_bias_init: NNInitFunc = default_kernel_init
+    """Initializer for the visible bias."""
+
+    def binarise(self, σ):
+        return binarise1(σ, self.bits_per_local_occupation, self.total_bits)
+
+    def setup(self):
+        self.bits_per_local_occupation = (
+            tuple(np.ceil(np.log2(self.local_sizes)).astype(int)) * 2
+        )
+        self.total_bits = sum(self.bits_per_local_occupation)
+        self.NDM = NDM(
+            name="ExpandedRBM",
+            dtype=self.dtype,
+            activation=self.activation,
+            alpha=self.alpha,
+            beta=self.beta,
+            use_hidden_bias=self.use_hidden_bias,
+            use_ancilla_bias=self.use_ancilla_bias,
+            use_visible_bias=self.use_visible_bias,
+            precision=self.precision,
+            kernel_init=self.kernel_init,
+            bias_init=self.bias_init,
+            visible_bias_init=self.visible_bias_init,
+        )
+
+    def __call__(self, σ):
+        σ = self.binarise(σ)
+
+        return self.NDM(σ)
