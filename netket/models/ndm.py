@@ -14,6 +14,7 @@
 
 from typing import Union, Any, Sequence
 from functools import partial
+import math
 
 import numpy as np
 
@@ -235,7 +236,6 @@ class NDM(nn.Module):
 @partial(jax.jit, static_argnums=[1, 2])
 def binarise1(states, bits_per_local_occupation, total_bits):
     binarised_states = jnp.empty(states.shape[:-1] + (total_bits,))
-
     ib = 0
     # TODO: write for loop in jax, otherwise this will be slow
     for i in range(states.shape[-1]):
@@ -250,6 +250,34 @@ def binarise1(states, bits_per_local_occupation, total_bits):
         )
         ib += bits_per_local_occupation[i]
     return binarised_states
+
+
+def loop_body(i, s):
+    substates = s["states"][..., i].astype(int)[..., jnp.newaxis]
+    s["binarised_states"] = (
+        s["binarised_states"]
+        .at[..., i, :]
+        .set(
+            substates & 2 ** jnp.arange(s["binarised_states"].shape[-1], dtype=int) != 0
+        )
+        .astype(s["states"].dtype)
+    )
+    return s
+
+
+@partial(jax.jit, static_argnums=[1, 2])
+def binarise2(states, bits_per_local_occupation, output_idx):
+    max_bits = max(bits_per_local_occupation)
+    init_s = {
+        "binarised_states": jnp.empty(states.shape + (max_bits,), dtype=states.dtype),
+        "states": states,
+    }
+    s = jax.lax.fori_loop(0, states.shape[-1], loop_body, init_s)
+    binarised_states = s["binarised_states"]
+    binarised_states = binarised_states.reshape(
+        *binarised_states.shape[:-2], math.prod(binarised_states.shape[-2:])
+    )
+    return binarised_states[..., output_idx]
 
 
 class NDMMultiVal(nn.Module):
@@ -291,13 +319,21 @@ class NDMMultiVal(nn.Module):
     """Initializer for the visible bias."""
 
     def binarise(self, σ):
-        return binarise1(σ, self.bits_per_local_occupation, self.total_bits)
+        # return binarise1(σ, self.bits_per_local_occupation, self.total_bits)
+        return binarise2(σ, self.bits_per_local_occupation, self.output_idx)
 
     def setup(self):
         self.bits_per_local_occupation = (
             tuple(np.ceil(np.log2(self.local_sizes)).astype(int)) * 2
         )
         self.total_bits = sum(self.bits_per_local_occupation)
+        max_bits = max(self.bits_per_local_occupation)
+        output_idx = []
+        offset = 0
+        for b in self.bits_per_local_occupation:
+            output_idx.extend([i + offset for i in range(b)])
+            offset += max_bits
+        self.output_idx = tuple(output_idx)
         self.NDM = NDM(
             name="ExpandedRBM",
             dtype=self.dtype,
