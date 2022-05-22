@@ -237,7 +237,6 @@ class NDM(nn.Module):
 def binarise1(states, bits_per_local_occupation, total_bits):
     binarised_states = jnp.empty(states.shape[:-1] + (total_bits,))
     ib = 0
-    # TODO: write for loop in jax, otherwise this will be slow
     for i in range(states.shape[-1]):
         substates = states[..., i : i + 1].astype(int)
         binarised_states = (
@@ -267,6 +266,7 @@ def loop_body(i, s):
 
 @partial(jax.jit, static_argnums=[1, 2])
 def binarise2(states, bits_per_local_occupation, output_idx):
+    # This is an implementation of binarise1 without Python's for loop, which should be faster when compiling
     max_bits = max(bits_per_local_occupation)
     init_s = {
         "binarised_states": jnp.empty(states.shape + (max_bits,), dtype=states.dtype),
