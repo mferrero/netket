@@ -1,9 +1,12 @@
-from functools import partial
+from functools import partial, lru_cache
+from typing import Union, Tuple, Optional
+import math
 
 import numpy as np
 from jax import numpy as jnp
-from netket.utils import get_afun_if_module
-from netket.utils import mpi
+from netket.utils import get_afun_if_module, mpi
+from netket.utils.types import Array
+from netket.hilbert import DiscreteHilbert
 import jax
 from flax.traverse_util import flatten_dict, unflatten_dict
 from flax.core import unfreeze
@@ -144,3 +147,65 @@ def update_dense_symm(params, names=["dense_symm", "Dense"]):
         return (path, array)
 
     return unflatten_dict(dict(map(fix_one_kernel, flatten_dict(params).items())))
+
+
+@lru_cache(maxsize=64)
+def _get_output_idx(
+    shape: Tuple[int, ...], max_bits: Optional[int] = None, doubled: bool = False
+) -> Tuple[Tuple[int, ...], int]:
+    bits_per_local_occupation = (
+        tuple(np.ceil(np.log2(shape)).astype(int)) * 2 if doubled else 1
+    )
+    if not isinstance(max_bits, int):
+        max_bits = max(bits_per_local_occupation)
+    output_idx = []
+    offset = 0
+    for b in bits_per_local_occupation:
+        output_idx.extend([i + offset for i in range(b)])
+        offset += max_bits
+    output_idx = tuple(output_idx)
+    return output_idx, max_bits
+
+
+def binary_encoding(
+    shape: Union[DiscreteHilbert, Tuple[int, ...]],
+    x: Array,
+    *,
+    max_bits: Optional[int] = None,
+    doubled: bool = False,
+) -> Array:
+    """
+    Encodes the array `x` into a set of binary-encoded variables described by shape.
+    """
+    if isinstance(shape, DiscreteHilbert):
+        shape = shape.shape
+    jax.core.concrete_or_error(None, shape, "Shape must be known statically")
+    max_bits, output_idx = _get_output_idx(shape, max_bits, doubled)
+    return _binarise(x, max_bits, output_idx)
+
+
+def _binarise_loop(i, s):
+    substates = s["states"][..., i].astype(int)[..., jnp.newaxis]
+    s["binarised_states"] = (
+        s["binarised_states"]
+        .at[..., i, :]
+        .set(
+            substates & 2 ** jnp.arange(s["binarised_states"].shape[-1], dtype=int) != 0
+        )
+        .astype(s["states"].dtype)
+    )
+    return s
+
+
+@partial(jax.jit, static_argnums=[1, 2])
+def _binarise(states, max_bits, output_idx):
+    init_s = {
+        "binarised_states": jnp.empty(states.shape + (max_bits,), dtype=states.dtype),
+        "states": states,
+    }
+    s = jax.lax.fori_loop(0, states.shape[-1], _binarise_loop, init_s)
+    binarised_states = s["binarised_states"]
+    binarised_states = binarised_states.reshape(
+        *binarised_states.shape[:-2], math.prod(binarised_states.shape[-2:])
+    )
+    return binarised_states[..., output_idx]
