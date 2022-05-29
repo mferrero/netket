@@ -180,7 +180,7 @@ def binary_encoding(
     if isinstance(shape, DiscreteHilbert):
         shape = shape.shape
     jax.core.concrete_or_error(None, shape, "Shape must be known statically")
-    max_bits, output_idx = _get_output_idx(shape, max_bits, doubled)
+    output_idx, max_bit = _get_output_idx(shape, max_bits, doubled)
     return _binarise(x, max_bits, output_idx)
 
 
