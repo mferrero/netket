@@ -156,7 +156,7 @@ def _get_output_idx(
     bits_per_local_occupation = (
         tuple(np.ceil(np.log2(shape)).astype(int)) * 2 if doubled else 1
     )
-    if not isinstance(max_bits, int):
+    if max_bits is None:
         max_bits = max(bits_per_local_occupation)
     output_idx = []
     offset = 0
