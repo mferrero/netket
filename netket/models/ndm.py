@@ -28,6 +28,7 @@ from netket.utils.types import NNInitFunc
 from netket import jax as nkjax
 from netket import nn as nknn
 from netket.utils import HashableArray
+from netket.hilbert import DiscreteHilbert
 
 default_kernel_init = normal(stddev=0.001)
 
@@ -233,53 +234,6 @@ class NDM(nn.Module):
         )
 
 
-@partial(jax.jit, static_argnums=[1, 2])
-def binarise1(states, bits_per_local_occupation, total_bits):
-    binarised_states = jnp.empty(states.shape[:-1] + (total_bits,))
-    ib = 0
-    for i in range(states.shape[-1]):
-        substates = states[..., i : i + 1].astype(int)
-        binarised_states = (
-            binarised_states.at[..., ib : ib + bits_per_local_occupation[i]]
-            .set(
-                substates & 2 ** jnp.arange(bits_per_local_occupation[i], dtype=int)
-                != 0
-            )
-            .astype(int)
-        )
-        ib += bits_per_local_occupation[i]
-    return binarised_states
-
-
-def loop_body(i, s):
-    substates = s["states"][..., i].astype(int)[..., jnp.newaxis]
-    s["binarised_states"] = (
-        s["binarised_states"]
-        .at[..., i, :]
-        .set(
-            substates & 2 ** jnp.arange(s["binarised_states"].shape[-1], dtype=int) != 0
-        )
-        .astype(s["states"].dtype)
-    )
-    return s
-
-
-@partial(jax.jit, static_argnums=[1, 2])
-def binarise2(states, bits_per_local_occupation, output_idx):
-    # This is an implementation of binarise1 without Python's for loop, which should be faster when compiling
-    max_bits = max(bits_per_local_occupation)
-    init_s = {
-        "binarised_states": jnp.empty(states.shape + (max_bits,), dtype=states.dtype),
-        "states": states,
-    }
-    s = jax.lax.fori_loop(0, states.shape[-1], loop_body, init_s)
-    binarised_states = s["binarised_states"]
-    binarised_states = binarised_states.reshape(
-        *binarised_states.shape[:-2], math.prod(binarised_states.shape[-2:])
-    )
-    return binarised_states[..., output_idx]
-
-
 class NDMMultiVal(nn.Module):
     """
     Generalises the Positive-Definite Neural Density Matrix using the ansatz from Torlai and
@@ -288,8 +242,8 @@ class NDMMultiVal(nn.Module):
     Assumes real dtype. #TODO why? Is it because complex numbers are already described by the phase part of the ansatz?
     """
 
-    local_sizes: Sequence[int]
-    """Local sizes of the discrete Hilbert space"""
+    hilbert: DiscreteHilbert
+    """Hilbert space where the Hamiltonian is defined."""
     dtype: Any = np.float64
     """The dtype of the weights."""
     activation: Any = nknn.log_cosh
@@ -318,23 +272,9 @@ class NDMMultiVal(nn.Module):
     visible_bias_init: NNInitFunc = default_kernel_init
     """Initializer for the visible bias."""
 
-    def binarise(self, σ):
-        # return binarise1(σ, self.bits_per_local_occupation, self.total_bits)
-        return binarise2(σ, self.bits_per_local_occupation, self.output_idx)
-
-    def setup(self):
-        self.bits_per_local_occupation = (
-            tuple(np.ceil(np.log2(self.local_sizes)).astype(int)) * 2
-        )
-        self.total_bits = sum(self.bits_per_local_occupation)
-        max_bits = max(self.bits_per_local_occupation)
-        output_idx = []
-        offset = 0
-        for b in self.bits_per_local_occupation:
-            output_idx.extend([i + offset for i in range(b)])
-            offset += max_bits
-        self.output_idx = tuple(output_idx)
-        self.NDM = NDM(
+    def __call__(self, σ):
+        σ = nknn.binary_encoding(self.hilbert.shape * 2, σ)
+        return NDM(
             name="ExpandedRBM",
             dtype=self.dtype,
             activation=self.activation,
@@ -347,9 +287,4 @@ class NDMMultiVal(nn.Module):
             kernel_init=self.kernel_init,
             bias_init=self.bias_init,
             visible_bias_init=self.visible_bias_init,
-        )
-
-    def __call__(self, σ):
-        σ = self.binarise(σ)
-
-        return self.NDM(σ)
+        )(σ)
