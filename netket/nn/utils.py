@@ -150,11 +150,9 @@ def update_dense_symm(params, names=["dense_symm", "Dense"]):
 
 
 def _get_output_idx(
-    shape: Tuple[int, ...], max_bits: Optional[int] = None, doubled: bool = False
+    shape: Tuple[int, ...], max_bits: Optional[int] = None
 ) -> Tuple[Tuple[int, ...], int]:
-    bits_per_local_occupation = tuple(np.ceil(np.log2(shape)).astype(int)) * (
-        2 if doubled else 1
-    )
+    bits_per_local_occupation = tuple(np.ceil(np.log2(shape)).astype(int))
     if max_bits is None:
         max_bits = max(bits_per_local_occupation)
     output_idx = []
@@ -172,7 +170,6 @@ def binary_encoding(
     x: Array,
     *,
     max_bits: Optional[int] = None,
-    doubled: bool = False,
 ) -> Array:
     """
     Encodes the array `x` into a set of binary-encoded variables described by shape.
@@ -180,7 +177,7 @@ def binary_encoding(
     if isinstance(shape, DiscreteHilbert):
         shape = shape.shape
     jax.core.concrete_or_error(None, shape, "Shape must be known statically")
-    output_idx, max_bits = _get_output_idx(shape, max_bits, doubled)
+    output_idx, max_bits = _get_output_idx(shape, max_bits)
     binarised_states = jnp.empty(x.shape + (max_bits,), dtype=x.dtype)
     for i in range(x.shape[-1]):
         substates = x[..., i].astype(int)[..., jnp.newaxis]
