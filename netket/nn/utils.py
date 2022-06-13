@@ -149,9 +149,12 @@ def update_dense_symm(params, names=["dense_symm", "Dense"]):
     return unflatten_dict(dict(map(fix_one_kernel, flatten_dict(params).items())))
 
 
-def _get_output_idx(shape: Tuple[int, ...]) -> Tuple[Tuple[int, ...], int]:
+def _get_output_idx(
+    shape: Tuple[int, ...], max_bits: Optional[int] = None
+) -> Tuple[Tuple[int, ...], int]:
     bits_per_local_occupation = tuple(np.ceil(np.log2(shape)).astype(int))
-    max_bits = max(bits_per_local_occupation)
+    if max_bits is None:
+        max_bits = max(bits_per_local_occupation)
     output_idx = []
     offset = 0
     for b in bits_per_local_occupation:
@@ -165,6 +168,8 @@ def _get_output_idx(shape: Tuple[int, ...]) -> Tuple[Tuple[int, ...], int]:
 def binary_encoding(
     shape: Union[DiscreteHilbert, Tuple[int, ...]],
     x: Array,
+    *,
+    max_bits: Optional[int] = None,
 ) -> Array:
     """
     Encodes the array `x` into a set of binary-encoded variables described by shape.
@@ -174,11 +179,12 @@ def binary_encoding(
         shape: Either a discrete Hilbert space or a tuple containing the shape of the
             discrete Hilbert space.
         x: The array to encode.
+        max_bits: The maximum number of bits to use for each element of `x`.
     """
     if isinstance(shape, DiscreteHilbert):
         shape = shape.shape
     jax.core.concrete_or_error(None, shape, "Shape must be known statically")
-    output_idx, max_bits = _get_output_idx(shape)
+    output_idx, max_bits = _get_output_idx(shape, max_bits)
     binarised_states = jnp.empty(x.shape + (max_bits,), dtype=x.dtype)
     for i in range(x.shape[-1]):
         substates = x[..., i].astype(int)[..., jnp.newaxis]
