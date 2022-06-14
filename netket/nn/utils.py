@@ -158,7 +158,7 @@ def _get_output_idx(
     output_idx = []
     offset = 0
     for b in bits_per_local_occupation:
-        output_idx.extend([i + offset for i in range(b)])
+        output_idx.extend([i + offset for i in range(b)][::-1])
         offset += max_bits
     output_idx = tuple(output_idx)
     return output_idx, max_bits
@@ -182,10 +182,11 @@ def binary_encoding(
         max_bits: The maximum number of bits to use for each element of `x`.
     """
     if isinstance(shape, DiscreteHilbert):
-        shape = shape.shape
+        shape = tuple(shape.shape)
     jax.core.concrete_or_error(None, shape, "Shape must be known statically")
     output_idx, max_bits = _get_output_idx(shape, max_bits)
     binarised_states = jnp.empty(x.shape + (max_bits,), dtype=x.dtype)
+    x = jnp.where(x == -1, 0, x)
     for i in range(x.shape[-1]):
         substates = x[..., i].astype(int)[..., jnp.newaxis]
         binarised_states = (
