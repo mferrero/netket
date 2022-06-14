@@ -19,6 +19,7 @@ import operator
 
 import jax.numpy as jnp
 import numpy as np
+import jax
 from jax.nn.initializers import normal
 
 import netket as nk
@@ -114,7 +115,7 @@ def _get_tls_hilbert_space(_type: str) -> nk.hilbert.DiscreteHilbert:
         raise ValueError("Supported types are 'spin' and 'qubit'")
 
 
-def _create_hilbert_space(shape):
+def _create_hilbert_space(shape) -> nk.hilbert.DiscreteHilbert:
     n_tls = shape.count(2)
     tls_hilbert = ["spin", "qubit"]
     for tlss in combinations_with_replacement(tls_hilbert, n_tls):
@@ -129,9 +130,29 @@ def _create_hilbert_space(shape):
         yield reduce(operator.mul, hilberts[1:], hilberts[0])
 
 
+def _int_to_binary_list(x, n_total_bits):
+    b = format(int(max(0, x)), "b")
+    nb = len(b)
+    zeros = n_total_bits - nb
+    return [0] * zeros + [int(br) for br in b]
+
+
+def _state_to_binary_list(random_state, bits_per_site):
+    return [
+        _int_to_binary_list(x, nbits) for (x, nbits) in zip(random_state, bits_per_site)
+    ]
+
+
 @pytest.mark.parametrize("hilbert_shape", [(2,), (2, 2), (2, 3), (4, 3, 2)])
 def test_binary_encoding(hilbert_shape):
     for hilbert in _create_hilbert_space(hilbert_shape):
-        shape = hilbert.shape
-        final_shape = sum([np.ceil(np.log2(s)) for s in shape])
-        # TODO: generate random states and check that they are correctly binarised
+        shape = tuple(hilbert.shape)
+        bits_per_site = [int(np.ceil(np.log2(s))) for s in shape]
+        total_bits = sum(bits_per_site)
+        random_state = hilbert.random_state(key=jax.random.PRNGKey(0))
+        encoded_with_shape = binary_encoding(shape, random_state)
+        encoded_with_hilbert = binary_encoding(hilbert, random_state)
+        assert total_bits == encoded_with_shape.size
+        np.testing.assert_allclose(encoded_with_shape, encoded_with_hilbert)
+        desired_state = sum(_state_to_binary_list(random_state, bits_per_site), [])
+        np.testing.assert_allclose(encoded_with_shape, desired_state)
