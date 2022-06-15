@@ -182,11 +182,11 @@ def binary_encoding(
         max_bits: The maximum number of bits to use for each element of `x`.
     """
     if isinstance(shape, DiscreteHilbert):
+        x = shape.states_to_local_indices(x)
         shape = tuple(shape.shape)
     jax.core.concrete_or_error(None, shape, "Shape must be known statically")
     output_idx, max_bits = _get_output_idx(shape, max_bits)
     binarised_states = jnp.empty(x.shape + (max_bits,), dtype=x.dtype)
-    x = jnp.where(x == -1, 0, x)
     for i in range(x.shape[-1]):
         substates = x[..., i].astype(int)[..., jnp.newaxis]
         binarised_states = (
