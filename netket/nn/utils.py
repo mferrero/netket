@@ -1,6 +1,6 @@
-from functools import partial, lru_cache
+from functools import partial, reduce
 from typing import Union, Tuple, Optional
-import math
+import operator
 
 import numpy as np
 from jax import numpy as jnp
@@ -164,6 +164,19 @@ def _get_output_idx(
     return output_idx, max_bits
 
 
+def _separate_binary_indices(
+    shape: Tuple[int, ...]
+) -> Tuple[Tuple[int, ...], Tuple[int, ...]]:
+    binary_indices = tuple([i for i in range(len(shape)) if shape[i] == 2])
+    non_binary_indices = tuple([i for i in range(len(shape)) if shape[i] != 2])
+    return binary_indices, non_binary_indices
+
+
+def _prod(iterable):
+    # This is a workaround for math.prod which is not defined for Python 3.7
+    return reduce(operator.mul, iterable, 1)
+
+
 @partial(jax.jit, static_argnums=(0, 2, 3))
 def binary_encoding(
     shape: Union[DiscreteHilbert, Tuple[int, ...]],
@@ -182,12 +195,12 @@ def binary_encoding(
         max_bits: The maximum number of bits to use for each element of `x`.
     """
     if isinstance(shape, DiscreteHilbert):
-        x = shape.states_to_local_indices(x)
         shape = tuple(shape.shape)
     jax.core.concrete_or_error(None, shape, "Shape must be known statically")
     output_idx, max_bits = _get_output_idx(shape, max_bits)
-    binarised_states = jnp.empty(x.shape + (max_bits,), dtype=x.dtype)
-    for i in range(x.shape[-1]):
+    binarised_states = jnp.zeros(x.shape + (max_bits,), dtype=x.dtype)
+    binary_indices, non_binary_indices = _separate_binary_indices(shape)
+    for i in non_binary_indices:
         substates = x[..., i].astype(int)[..., jnp.newaxis]
         binarised_states = (
             binarised_states.at[..., i, :]
@@ -196,6 +209,8 @@ def binary_encoding(
             )
             .astype(x.dtype)
         )
+    for i in binary_indices:
+        binarised_states = binarised_states.at[..., i, 0].set(x[..., i])
     return binarised_states.reshape(
-        *binarised_states.shape[:-2], math.prod(binarised_states.shape[-2:])
+        *binarised_states.shape[:-2], _prod(binarised_states.shape[-2:])
     )[..., output_idx]

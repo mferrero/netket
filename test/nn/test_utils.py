@@ -131,6 +131,8 @@ def _create_hilbert_space(shape) -> nk.hilbert.DiscreteHilbert:
 
 
 def _int_to_binary_list(x, n_total_bits):
+    if n_total_bits == 1:
+        return [x]
     b = format(int(max(0, x)), "b")
     nb = len(b)
     zeros = n_total_bits - nb
