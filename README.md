@@ -102,3 +102,73 @@ If you want to get in touch with us, feel free to open an issue or a discussion 
 ## License
 
 [Apache License 2.0](https://github.com/netket/netket/blob/master/LICENSE)
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/PhilipVinc"><img src="https://avatars.githubusercontent.com/u/2407108?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Filippo Vicentini</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=PhilipVinc" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gcarleo"><img src="https://avatars.githubusercontent.com/u/28149892?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Giuseppe Carleo</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=gcarleo" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/femtobit"><img src="https://avatars.githubusercontent.com/u/4601206?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Damian Hofmann</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=femtobit" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/kchoo1118"><img src="https://avatars.githubusercontent.com/u/39584601?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kenny Choo</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=kchoo1118" title="Code">💻</a></td>
+    <td align="center"><a href="https://jamesetsmith.github.io/"><img src="https://avatars.githubusercontent.com/u/11277676?v=4?s=100" width="100px;" alt=""/><br /><sub><b>James E T Smith</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=jamesETsmith" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/chrisrothUT"><img src="https://avatars.githubusercontent.com/u/61942272?v=4?s=100" width="100px;" alt=""/><br /><sub><b>chrisrothUT</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=chrisrothUT" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.researchgate.net/profile/Vladimir_Vargas-Calderon"><img src="https://avatars.githubusercontent.com/u/31494271?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Vladimir Vargas-Calderón</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=VolodyaCO" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://evert.info/"><img src="https://avatars.githubusercontent.com/u/1933169?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Evert van Nieuwenburg</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=everthemore" title="Code">💻</a></td>
+    <td align="center"><a href="https://shhslin.github.io/"><img src="https://avatars.githubusercontent.com/u/23406538?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sheng-Hsuan Lin</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=ShHsLin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/wdphy16"><img src="https://avatars.githubusercontent.com/u/43414703?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Dian Wu</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=wdphy16" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/GTorlai"><img src="https://avatars.githubusercontent.com/u/9124752?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Giacomo Torlai</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=GTorlai" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/nikita-astronaut"><img src="https://avatars.githubusercontent.com/u/5345808?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nikita Astrakhantsev</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=nikita-astronaut" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/attila-i-szabo"><img src="https://avatars.githubusercontent.com/u/33730178?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Attila Szabó</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=attila-i-szabo" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/inailuig"><img src="https://avatars.githubusercontent.com/u/7287577?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Clemens Giuliani</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=inailuig" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/tvieijra"><img src="https://avatars.githubusercontent.com/u/31245481?v=4?s=100" width="100px;" alt=""/><br /><sub><b>tvieijra</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=tvieijra" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/fabienalet"><img src="https://avatars.githubusercontent.com/u/39381856?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Fabien Alet</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=fabienalet" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/stavros11"><img src="https://avatars.githubusercontent.com/u/35475381?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Stavros Efthymiou</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=stavros11" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jwnys"><img src="https://avatars.githubusercontent.com/u/17109783?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jannes Nys</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=jwnys" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ChenAo-Phys"><img src="https://avatars.githubusercontent.com/u/64438142?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chen Ao</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=ChenAo-Phys" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/emilyjd"><img src="https://avatars.githubusercontent.com/u/33588842?v=4?s=100" width="100px;" alt=""/><br /><sub><b>emilyjd</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=emilyjd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gpescia"><img src="https://avatars.githubusercontent.com/u/79276688?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gabriel Pescia</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=gpescia" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/wuyukai"><img src="https://avatars.githubusercontent.com/u/5736909?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yukai Wu</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=wuyukai" title="Code">💻</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/erinaldi2"><img src="https://avatars.githubusercontent.com/u/5943556?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Enrico Rinaldi</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=erinaldi" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/nikosavola"><img src="https://avatars.githubusercontent.com/u/7860886?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Niko Savola</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=nikosavola" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/yannra"><img src="https://avatars.githubusercontent.com/u/43750364?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yannic Rath</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=yannra" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/imi-hub"><img src="https://avatars.githubusercontent.com/u/80409000?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Imelda Romero</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=imi-hub" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/awietek"><img src="https://avatars.githubusercontent.com/u/5948847?v=4?s=100" width="100px;" alt=""/><br /><sub><b>awietek</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=awietek" title="Code">💻</a></td>
+    <td align="center"><a href="http://amitkumarj441.github.io/"><img src="https://avatars.githubusercontent.com/u/14039450?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Amit Kumar Jaiswal</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=amitkumarj441" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="http://christian.mendl.net/"><img src="https://avatars.githubusercontent.com/u/9061478?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Christian B. Mendl</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=cmendl" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/evmckinney9"><img src="https://avatars.githubusercontent.com/u/47376937?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Evan McKinney</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=evmckinney9" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/martamau"><img src="https://avatars.githubusercontent.com/u/46056167?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Marta Mauri</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=martamau" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/maxbortone"><img src="https://avatars.githubusercontent.com/u/2243400?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Massimo Bortone</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=maxbortone" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/mmezic"><img src="https://avatars.githubusercontent.com/u/18701830?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Matĕj Mezera</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=mmezic" title="Code">💻</a></td>
+    <td align="center"><a href="http://nicky.pro/"><img src="https://avatars.githubusercontent.com/u/52249105?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nicky Pochinkov</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=pesvut" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/nkaeming"><img src="https://avatars.githubusercontent.com/u/12357446?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Niklas</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=nkaeming" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/noamwies"><img src="https://avatars.githubusercontent.com/u/3121971?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Noam Wies</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=noamwies" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ooreilly"><img src="https://avatars.githubusercontent.com/u/13162518?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ossian O'Reilly</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=ooreilly" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/theveniaut"><img src="https://avatars.githubusercontent.com/u/39381230?v=4?s=100" width="100px;" alt=""/><br /><sub><b>theveniaut</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=theveniaut" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/alexandercbooth"><img src="https://avatars.githubusercontent.com/u/15242567?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alexandercbooth</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=alexandercbooth" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/artemborin"><img src="https://avatars.githubusercontent.com/u/39701087?v=4?s=100" width="100px;" alt=""/><br /><sub><b>artemborin</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=artemborin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/orialb"><img src="https://avatars.githubusercontent.com/u/1208196?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ori Alberton</b></sub></a><br /><a href="https://github.com/netket/netket/commits?author=orialb" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
