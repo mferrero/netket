@@ -49,9 +49,9 @@ def _to_iterable(maybe_iterable):
 # - _estimate_stats should return the MC estimate of a single operator
 # - reset should reset the driver (usually the sampler).
 # - info should return a string with an overview of the driver.
-# - The __init__ method should be called with the machine and the optimizer. If this
+# - The __init__ method shouldbe called with the machine and the optimizer. If this
 #   driver is minimising a loss function and you want it's name to show up automatically
-#   in the progress bar/output files you should pass the optional keyword argument
+#   in the progress bar/ouput files you should pass the optional keyword argument
 #   minimized_quantity_name.
 class AbstractVariationalDriver(abc.ABC):
     """Abstract base class for NetKet Variational Monte Carlo drivers"""
@@ -258,7 +258,7 @@ class AbstractVariationalDriver(abc.ABC):
                 if self._loss_stats is not None:
                     pbar.set_postfix_str(self._loss_name + "=" + str(self._loss_stats))
                     log_data[self._loss_name] = self._loss_stats
-
+                
                 # Execute callbacks before loggers because they can append to log_data
                 for callback in callbacks:
                     if not callback(step, log_data, self):
@@ -266,7 +266,7 @@ class AbstractVariationalDriver(abc.ABC):
 
                 for logger in loggers:
                     logger(self.step_count, log_data, self.state)
-
+                
                 if len(callbacks) > 0:
                     if mpi.mpi_any(callback_stop):
                         break
@@ -331,6 +331,141 @@ class AbstractVariationalDriver(abc.ABC):
         """
         pass  # pragma: no cover
 
+########################
+#The following function of the class is a copy of run() and is modified by S. Dash to include a threshhold for convergence of the Gradient descent. 
+    def run_t(
+        self,
+        n_iter,
+        out=None,
+        obs=None,
+        show_progress=True,
+        save_params_every=50,  # for default logger
+        write_every=50,  # for default logger
+        step_size=1,  # for default logger
+        callback=lambda *x: True,
+        threshhold=1e-4,
+    ):
+        """
+        Executes the Monte Carlo Variational optimization, updating the weights of the network
+        stored in this driver for `n_iter` steps and dumping values of the observables `obs`
+        in the output `logger`. If no logger is specified, creates a json file at `out`,
+        overwriting files with the same prefix.
+
+        By default uses :ref:`netket.logging.JsonLog`. To know about the output format
+        check it's documentation. The logger object is also returned at the end of this function
+        so that you can inspect the results without reading the json output.
+
+        Args:
+            n_iter: the total number of iterations
+            out: A logger object, or an iterable of loggers, to be used to store simulation log and data.
+                If this argument is a string, it will be used as output prefix for the standard JSON logger.
+            obs: An iterable containing all observables that should be computed
+            save_params_every: Every how many steps the parameters of the network should be
+                serialized to disk (ignored if logger is provided)
+            write_every: Every how many steps the json data should be flushed to disk (ignored if
+                logger is provided)
+            step_size: Every how many steps should observables be logged to disk (default=1)
+            show_progress: If true displays a progress bar (default=True)
+            callback: Callable or list of callable callback functions to stop training given a condition
+            threshhold: Stops the iterations if the energy (averaged over iterations) does not change more than the threshhold for 5 consecutive iterations
+        """
+
+        if not isinstance(n_iter, numbers.Number):
+            raise ValueError(
+                "n_iter, the first positional argument to `run`, must be a number!"
+            )
+
+        if obs is None:
+            obs = {}
+
+        if out is None:
+            out = tuple()
+            print(
+                "No output specified (out=[apath|nk.logging.JsonLogger(...)])."
+                "Running the optimization but not saving the output."
+            )
+
+        # Log only non-root nodes
+        if self._mynode == 0:
+            # if out is a path, create an overwriting Json Log for output
+            if isinstance(out, str):
+                loggers = (JsonLog(out, "w", save_params_every, write_every),)
+            else:
+                loggers = _to_iterable(out)
+        else:
+            loggers = tuple()
+            show_progress = False
+
+        callbacks = _to_iterable(callback)
+        callback_stop = False
+
+        with tqdm(total=n_iter, disable=not show_progress) as pbar:
+            old_step = self.step_count
+            first_step = True
+            
+            v_en = []
+            avv = 0
+            u_en = []
+            avu = 0
+            properly_converged = 0
+            for step in self.iter(n_iter, step_size):  
+                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! S.Dash
+                v_en.append(self._loss_stats.mean)
+                #print("Energy while gradient descent", v_en)
+                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                log_data = self.estimate(obs)
+                self._log_additional_data(log_data, step)
+                
+                # if the cost-function is defined then report it in the progress bar
+                if self._loss_stats is not None:
+                    pbar.set_postfix_str(self._loss_name + "=" + str(self._loss_stats))
+                    log_data[self._loss_name] = self._loss_stats
+
+
+                # Execute callbacks before loggers because they can append to log_data
+                for callback in callbacks:
+                    if not callback(step, log_data, self):
+                        callback_stop = True
+
+                for logger in loggers:
+                    logger(self.step_count, log_data, self.state)
+
+                if len(callbacks) > 0:
+                    if mpi.mpi_any(callback_stop):
+                        break
+
+                # Reset the timing of tqdm after the first step, to ignore compilation time
+                if first_step:
+                    first_step = False
+                    pbar.unpause()
+                # Update the progress bar
+                pbar.update(self.step_count - old_step)
+                old_step = self.step_count
+                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! S.Dash
+                if(old_step>1):    
+                    avv = sum(v_en)/len(v_en)
+                    avu = sum(u_en)/len(u_en)
+                if(abs(avv-avu)<threshhold and old_step>600):
+                    #print("here")
+                    properly_converged += 1
+                else:
+                    properly_converged = 0
+                
+                if(properly_converged >= 5):    
+                    print("The energy has converged within "+str(threshhold)+".")
+                    break
+                u_en.append(self._loss_stats.mean)
+                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # Final update so that it shows up filled.
+            pbar.update(self.step_count - old_step)
+
+        # flush at the end of the evolution so that final values are saved to
+        # file
+        for logger in loggers:
+            logger.flush(self.state)
+
+        return loggers
+
 
 @partial(jax.jit, static_argnums=0)
 def apply_gradient(optimizer_fun, optimizer_state, dp, params):
@@ -340,3 +475,7 @@ def apply_gradient(optimizer_fun, optimizer_state, dp, params):
 
     new_params = optax.apply_updates(params, updates)
     return new_optimizer_state, new_params
+
+
+
+
