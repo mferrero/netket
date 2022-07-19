@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
+
 from netket.utils.types import DType as _DType
 
 from netket.hilbert import AbstractHilbert as _AbstractHilbert
@@ -153,3 +155,33 @@ def sigmap(
     D = np.array([np.sqrt(S2 - m * (m + 1)) for m in np.arange(S - 1, -(S + 1), -1)])
     mat = np.diag(D, 1)
     return _LocalOperator(hilbert, mat, [site], dtype=dtype)
+
+# The function below is added by S. Dash to define a local netket operator directly from a matrix of appropriate dimension 
+
+def custom_mat(
+        hilbert: _AbstractHilbert, site: int, matrix_op: np.ndarray, dtype: _DType = complex
+) -> _LocalOperator:
+    """
+    Builds the :math:`\\sigma^x` operator acting on the `site`-th of the Hilbert
+    space `hilbert`.
+
+    If `hilbert` is a non-Spin space of local dimension M, it is considered
+    as a (M-1)/2 - spin space.
+
+    :param hilbert: The hilbert space
+    :param site: the site on which this operator acts
+    :param matrix_op: the matrix representation of the operator
+    :return: a nk.operator.LocalOperator
+    """
+    import numpy as np
+
+    N = hilbert.size_at_index(site)
+
+    mat = matrix_op
+    if(mat.shape[-1]!=N):
+        print("Incorrect shape of the custom matrix operator")
+
+    return _LocalOperator(hilbert, mat, [site], dtype=dtype)
+
+
+
