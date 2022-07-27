@@ -104,6 +104,7 @@ def sigmaz(
 
     D = np.array([2 * m for m in np.arange(S, -(S + 1), -1)])
     mat = np.diag(D, 0)
+   # print("The local sz matrix: \n", mat)
     return _LocalOperator(hilbert, mat, [site], dtype=dtype)
 
 
@@ -162,7 +163,7 @@ def custom_mat(
         hilbert: _AbstractHilbert, site: int, matrix_op: np.ndarray, dtype: _DType = complex
 ) -> _LocalOperator:
     """
-    Builds the :math:`\\sigma^x` operator acting on the `site`-th of the Hilbert
+    Builds a custom operator acting on the `site`-th of the Hilbert
     space `hilbert`.
 
     If `hilbert` is a non-Spin space of local dimension M, it is considered
@@ -177,7 +178,7 @@ def custom_mat(
 
     N = hilbert.size_at_index(site)
 
-    mat = matrix_op
+    mat = 2*matrix_op #Netket takes the local spin operators with a factor of 2 --see the above operators
     if(mat.shape[-1]!=N):
         print("Incorrect shape of the custom matrix operator")
 
